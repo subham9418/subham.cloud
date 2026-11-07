@@ -1,0 +1,143 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { site, experience, skills, now, yearsExperience } from '../data/site';
+const posts = (await getCollection('blog', (p) => !p.data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const fmt = (d: Date) => d.toISOString().slice(0, 10);
+const banner = String.raw`  ____        _     _
+ / ___| _   _| |__ | |__   __ _ _ __ ___
+ \___ \| | | | '_ \| '_ \ / _' | '_ ' _ \
+  ___) | |_| | |_) | | | | (_| | | | | | |
+ |____/ \__,_|_.__/|_| |_|\__,_|_| |_| |_|`;
+---
+<Base>
+  <div id="static">
+    <section id="about">
+      <div class="cmd"><span class="p">$</span> <span class="h">about</span></div>
+      <div class="out">
+        <pre class="ascii" aria-hidden="true">{banner}</pre>
+        <h1 class="big">Back-end engineer. Cloud &amp; GenAI.</h1>
+        <div class="card">
+          Senior engineer in Hyderabad with <b class="h">{yearsExperience}+ years</b> building scalable server-side
+          systems in <b class="h">Go</b>, <b class="h">Node.js</b> and <b class="h">AWS</b>. Currently shipping GenAI
+          features at CBRE. AWS Certified Solutions Architect – Associate. B.Tech in Computer Science.
+        </div>
+        <div class="chips">
+          <a class="chip" href={site.resume} target="_blank" rel="noopener">resume.pdf</a>
+          <a class="chip" href={`mailto:${site.email}`}>email</a>
+          <a class="chip" href={site.github} rel="noopener">github</a>
+          <a class="chip" href={site.linkedin} rel="noopener">linkedin</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="now">
+      <div class="cmd"><span class="p">$</span> <span class="h">now</span></div>
+      <div class="out"><div class="card"><span class="w">●</span> {now}</div></div>
+    </section>
+
+    <section id="exp">
+      <div class="cmd"><span class="p">$</span> <span class="h">exp</span> <span class="d"># career as a git log</span></div>
+      <div class="out">
+        {experience.map((j) => (
+          <div class="card">
+            <span class="hash">commit {j.hash}</span> <span class="d">{j.location}</span><br />
+            <span class="h">{j.role} · {j.company}</span><br />
+            <span class="d">{j.period}</span>
+            <ul>{j.points.map((pt) => <li>{pt}</li>)}</ul>
+            <div style="margin-top:8px">{j.stack.map((s) => <span class="tag">{s}</span>)}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section id="skills">
+      <div class="cmd"><span class="p">$</span> <span class="h">skills</span></div>
+      <div class="out"><div class="card">
+        {skills.map((g) => (
+          <div class="group"><span class="d">{g.group}</span><span>{g.items.map((i) => <span class="tag">{i}</span>)}</span></div>
+        ))}
+      </div></div>
+    </section>
+
+    <section id="notes">
+      <div class="cmd"><span class="p">$</span> <span class="h">notes</span></div>
+      <div class="out"><div class="card posts">
+        {posts.length === 0 && <span class="d">nothing here yet</span>}
+        {posts.map((p) => (
+          <div class="row"><span class="d">{fmt(p.data.date)}</span>
+            <span><a href={`/blog/${p.id}`}>{p.data.title}</a> <span class="d">— {p.data.description}</span></span></div>
+        ))}
+      </div></div>
+    </section>
+
+    <section id="contact">
+      <div class="cmd"><span class="p">$</span> <span class="h">contact</span></div>
+      <div class="out"><div class="card">
+        <div class="row"><span class="d">email</span><a href={`mailto:${site.email}`}>{site.email}</a></div>
+        <div class="row"><span class="d">github</span><a href={site.github} rel="noopener">github.com/subham9418</a></div>
+        <div class="row"><span class="d">linkedin</span><a href={site.linkedin} rel="noopener">in/subham9418</a></div>
+      </div></div>
+    </section>
+  </div>
+
+  <div id="term" aria-live="polite"></div>
+
+  <form class="prompt" id="prompt" autocomplete="off">
+    <div><label for="in" class="p">subham@cloud:~$</label><input id="in" spellcheck="false" aria-label="Type a command, e.g. help" /></div>
+  </form>
+
+  <script is:inline define:vars={{ resume: site.resume }}>
+    const root = document.documentElement, term = document.getElementById('term');
+    const prompt = document.getElementById('prompt'), inp = document.getElementById('in');
+    const hist = []; let hi = 0;
+    const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const out = (id) => { const el = document.querySelector('#static #' + id + ' .out'); return el ? el.innerHTML : ''; };
+    const HELP = [['about','who I am'],['now','what I am doing lately'],['exp','career as a git log'],['skills','what I work with'],['notes','things I write'],['contact','get in touch'],['resume','open the PDF'],['theme','cycle green / amber / ice'],['whoami · ls · clear','the usual']];
+    const themes = ['', 'amber', 'ice'];
+    const C = {
+      help: () => '<div class="card">' + HELP.map(([a, b]) => '<div class="row"><span class="p">' + a + '</span><span class="d">' + b + '</span></div>').join('') + '</div>',
+      about: () => out('about'), now: () => out('now'), exp: () => out('exp'), skills: () => out('skills'),
+      notes: () => out('notes'), contact: () => out('contact'),
+      resume: () => { window.open(resume, '_blank', 'noopener'); return '<span class="d">opening</span> <a href="' + resume + '" target="_blank" rel="noopener">SubhamMohanty.pdf</a>'; },
+      whoami: () => 'subham — senior software engineer',
+      ls: () => '<span class="p">about/  exp/  skills/  notes/  contact/</span>  resume.pdf',
+      theme: () => {
+        const i = (themes.indexOf(root.dataset.theme || '') + 1) % themes.length, t = themes[i];
+        if (t) root.dataset.theme = t; else delete root.dataset.theme;
+        try { localStorage.setItem('theme', t); } catch (e) {}
+        return 'theme → <span class="p">' + (t || 'green') + '</span>';
+      },
+      'sudo hire subham': () => '<span class="w">[sudo] password for recruiter:</span> ********<br><span class="p">Access granted.</span> <a href="mailto:' + document.querySelector('#contact a').textContent + '">Email me</a> :)'
+    };
+    function print(cmd, html) {
+      term.insertAdjacentHTML('beforeend', '<div class="cmd"><span class="p">$</span> <span class="h">' + esc(cmd) + '</span></div><div class="out">' + html + '</div>');
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+    function run(c) {
+      c = c.trim(); if (!c) return;
+      hist.push(c); hi = hist.length;
+      const k = c.toLowerCase();
+      if (k === 'clear') { term.innerHTML = ''; return; }
+      const f = C[k];
+      print(c, f ? f() : '<span class="w">command not found:</span> ' + esc(c) + ' — try <span class="p">help</span>');
+    }
+    function start() {
+      if (root.classList.contains('term-on')) return;
+      root.classList.add('term-on'); prompt.classList.add('on');
+      print('about', C.about());
+      term.insertAdjacentHTML('beforeend', '<div class="d">Type <span class="p">help</span> or use the tabs above.</div>');
+      inp.focus({ preventScroll: true });
+    }
+    start();
+    prompt.addEventListener('submit', (e) => { e.preventDefault(); run(inp.value); inp.value = ''; });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowUp') { if (hi > 0) inp.value = hist[--hi] || ''; e.preventDefault(); }
+      else if (e.key === 'ArrowDown') { inp.value = hist[++hi] || ''; e.preventDefault(); }
+      else if (e.key === 'Tab') { e.preventDefault(); const m = Object.keys(C).filter((x) => x.startsWith(inp.value.toLowerCase())); if (m.length === 1) inp.value = m[0]; }
+    });
+    document.querySelectorAll('[data-cmd]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); run(el.dataset.cmd); }));
+    document.addEventListener('click', (e) => { if (!e.target.closest('a,button,input') && !getSelection().toString()) inp.focus({ preventScroll: true }); });
+  </script>
+</Base>
