@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://subham.cloud/sitemap-index.xml
