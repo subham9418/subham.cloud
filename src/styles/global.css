@@ -44,6 +44,7 @@ main { max-width: 860px; margin: 0 auto; padding: 24px 16px 96px; }
 .prompt { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--bg); border-top: 1px solid var(--line); padding: 10px 16px; }
 .js .prompt.on { display: block; }
 .prompt div { max-width: 860px; margin: 0 auto; display: flex; gap: 8px; align-items: center; }
+.prompt input::placeholder { color: var(--dim); opacity: 1; }
 .prompt input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--hi); font: inherit; caret-color: var(--acc); }
 #term { display: none; } .term-on #term { display: block; } .term-on #static { display: none; }
 #term .cmd { margin-top: 10px; } #term .out { margin-bottom: 18px; }

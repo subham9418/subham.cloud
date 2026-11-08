@@ -131,6 +131,24 @@ const banner = String.raw`  ____        _     _
       inp.focus({ preventScroll: true });
     }
     start();
+
+    // Typing placeholder: cycles through commands until the user types something.
+    (function placeholder() {
+      const words = ['help', 'about', 'exp', 'skills', 'notes', 'contact', 'now', 'resume', 'theme'];
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) { inp.placeholder = 'type help'; return; }
+      let w = 0, n = 0, del = false;
+      function tick() {
+        if (inp.value) { inp.placeholder = ''; return setTimeout(tick, 400); } // user is typing: pause
+        const word = words[w];
+        n += del ? -1 : 1;
+        inp.placeholder = word.slice(0, n);
+        let wait = del ? 45 : 90;
+        if (!del && n === word.length) { del = true; wait = 1300; }
+        else if (del && n === 0) { del = false; w = (w + 1) % words.length; wait = 350; }
+        setTimeout(tick, wait);
+      }
+      setTimeout(tick, 600);
+    })();
     prompt.addEventListener('submit', (e) => { e.preventDefault(); run(inp.value); inp.value = ''; });
     inp.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowUp') { if (hi > 0) inp.value = hist[--hi] || ''; e.preventDefault(); }
